@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rag-insight 콘솔 목업</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+<style>
+  :root{
+    --bg-primary:#ffffff;
+    --bg-secondary:#f7f6f4;
+    --bg-tertiary:#f1efe8;
+    --bg-info:#e6f1fb;
+    --bg-success:#eaf3de;
+    --bg-warning:#faeeda;
+    --bg-danger:#fcebeb;
+    --text-primary:#1a1a18;
+    --text-secondary:#5f5e5a;
+    --text-tertiary:#888780;
+    --text-info:#0c447c;
+    --text-success:#27500a;
+    --text-warning:#854f0b;
+    --text-danger:#a32d2d;
+    --border-tertiary: rgba(0,0,0,0.10);
+    --border-secondary: rgba(0,0,0,0.18);
+    --border-info:#378add;
+    --radius-md:8px;
+    --radius-lg:12px;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: "SF Mono", "Roboto Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg-primary:#1f1e1c;
+      --bg-secondary:#2a2926;
+      --bg-tertiary:#252422;
+      --bg-info:#0c447c;
+      --bg-success:#27500a;
+      --bg-warning:#633806;
+      --bg-danger:#791f1f;
+      --text-primary:#f3f2ee;
+      --text-secondary:#b4b2a9;
+      --text-tertiary:#888780;
+      --text-info:#b5d4f4;
+      --text-success:#c0dd97;
+      --text-warning:#fac775;
+      --text-danger:#f7c1c1;
+      --border-tertiary: rgba(255,255,255,0.12);
+      --border-secondary: rgba(255,255,255,0.22);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:24px; font-family:var(--font-sans); color:var(--text-primary);
+    background:var(--bg-tertiary); font-size:16px; line-height:1.7;
+  }
+  h2.sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0);}
+
+  .app{ background:var(--bg-secondary); border-radius:var(--radius-lg); padding:10px; max-width:1040px; margin:0 auto; }
+  .layout{ display:flex; gap:10px; min-height:600px; }
+
+  .sidebar{
+    width:180px; flex-shrink:0; background:var(--bg-primary);
+    border:0.5px solid var(--border-tertiary); border-radius:var(--radius-md);
+    padding:12px 8px; display:flex; flex-direction:column; gap:2px;
+  }
+  .brand{ display:flex; align-items:center; gap:7px; padding:4px 8px 12px; }
+  .brand i{ font-size:19px; color:var(--text-info); }
+  .brand span{ font-weight:500; font-size:14px; }
+
+  .navbtn{
+    display:flex; align-items:center; gap:9px; width:100%; padding:8px 9px;
+    border:none; background:transparent; border-radius:var(--radius-md);
+    font-size:13px; color:var(--text-secondary); cursor:pointer; text-align:left;
+    font-family:var(--font-sans);
+  }
+  .navbtn:hover{ background:var(--bg-secondary); }
+  .navbtn .ti{ font-size:17px; }
+  .navbtn .cnt{ margin-left:auto; font-size:11px; background:var(--bg-info); color:var(--text-info); border-radius:9px; padding:1px 7px; }
+
+  .userbox{ padding:8px; border-top:0.5px solid var(--border-tertiary); display:flex; align-items:center; gap:7px; margin-top:auto; }
+  .avatar{ width:26px; height:26px; border-radius:50%; background:var(--bg-info); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; color:var(--text-info); flex-shrink:0; }
+  .userbox .name{ font-size:12px; font-weight:500; }
+  .userbox .role{ font-size:11px; color:var(--text-tertiary); }
+
+  .main{ flex:1; min-width:0; }
+  .screen{ display:none; }
+
+  .panel{ background:var(--bg-primary); border:0.5px solid var(--border-tertiary); border-radius:var(--radius-lg); padding:14px 16px; margin-bottom:10px; }
+  .h{ font-size:16px; font-weight:500; margin:2px 0 12px; }
+  .h-sm{ font-size:14px; font-weight:500; margin:2px 0 12px; }
+  .sub{ font-size:12px; color:var(--text-tertiary); }
+
+  .pill{ font-size:11px; padding:2px 8px; border-radius:var(--radius-md); font-weight:500; display:inline-block; }
+
+  .metric-grid{ display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; }
+  .metric-grid .metric{ flex:1 1 calc(25% - 8px); min-width:120px; }
+  .metric{ background:var(--bg-secondary); border-radius:var(--radius-md); padding:11px 13px; }
+  .metric .lbl{ font-size:12px; color:var(--text-secondary); margin-bottom:3px; }
+  .metric .val{ font-size:23px; font-weight:500; }
+
+  .two-col{ display:flex; flex-wrap:wrap; gap:10px; }
+  .two-col > .panel{ flex:1 1 320px; }
+
+  .row{ display:flex; align-items:center; gap:10px; padding:9px 0; border-top:0.5px solid var(--border-tertiary); }
+  .row:first-of-type{ border-top:none; }
+  .tag{ font-size:11px; font-family:var(--font-mono); padding:1px 6px; border-radius:4px; background:var(--bg-secondary); color:var(--text-secondary); }
+
+  .btn{ font-size:12px; padding:5px 11px; border:0.5px solid var(--border-secondary); background:transparent; border-radius:var(--radius-md); cursor:pointer; font-family:var(--font-sans); color:var(--text-primary); }
+  .btn:hover{ background:var(--bg-secondary); }
+  .btn:active{ transform:scale(0.98); }
+  .btn.pri{ background:var(--bg-info); border-color:transparent; color:var(--text-info); }
+
+  .bar-row{ margin:9px 0; }
+  .bar-row .top{ display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px; }
+  .bar-row .top .val{ font-family:var(--font-mono); color:var(--text-secondary); }
+  .bar-track{ height:6px; background:var(--bg-secondary); border-radius:3px; overflow:hidden; }
+  .bar-fill{ height:100%; opacity:.55; }
+
+  .alarm-row{ display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-top:0.5px solid var(--border-tertiary); }
+  .alarm-row:first-of-type{ border-top:none; }
+  .alarm-row i{ font-size:16px; margin-top:2px; }
+  .alarm-row .title{ font-size:12px; }
+
+  .stage-row{ display:flex; gap:6px; margin-bottom:14px; }
+  .stage{ display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; }
+  .stage .dot{ width:100%; height:5px; border-radius:3px; opacity:.6; }
+  .stage .nm{ font-size:11px; color:var(--text-secondary); }
+  .stage .ms{ font-size:11px; font-weight:500; font-family:var(--font-mono); }
+
+  .codebox{ background:var(--bg-secondary); border-radius:var(--radius-md); padding:11px 13px; }
+  .codebox code{ font-family:var(--font-mono); font-size:12px; background:var(--bg-tertiary); padding:1px 4px; border-radius:4px; }
+
+  table.gate{ width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed; }
+  table.gate th{ padding:6px 4px; font-weight:400; text-align:left; color:var(--text-secondary); }
+  table.gate td{ padding:7px 4px; border-top:0.5px solid var(--border-tertiary); }
+  table.gate td.mono, table.gate th.mono{ font-family:var(--font-mono); }
+
+  .approval-card{ border-radius:var(--radius-md); padding:12px 13px; margin-bottom:10px; }
+  .approval-card.featured{ border:0.5px solid var(--border-info); }
+  .approval-card.plain{ border:0.5px solid var(--border-tertiary); }
+  .approval-card .ahead{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .approval-card .atitle{ font-size:13px; font-weight:500; }
+  .approval-actions{ display:flex; gap:8px; justify-content:flex-end; }
+
+  .note-success{ margin-top:12px; padding:10px 12px; background:var(--bg-success); border-radius:var(--radius-md); font-size:12px; color:var(--text-success); }
+
+  /* 탭 전환 (라디오 기반, JS 불필요) */
+  input[name="tab"]{ position:absolute; opacity:0; pointer-events:none; }
+  .screen{ display:none; }
+  #tab-dash:checked ~ .main #screen-dash,
+  #tab-rca:checked ~ .main #screen-rca,
+  #tab-trace:checked ~ .main #screen-trace,
+  #tab-gate:checked ~ .main #screen-gate,
+  #tab-deploy:checked ~ .main #screen-deploy{ display:block; }
+
+  #tab-dash:checked ~ .sidebar label[for="tab-dash"],
+  #tab-rca:checked ~ .sidebar label[for="tab-rca"],
+  #tab-trace:checked ~ .sidebar label[for="tab-trace"],
+  #tab-gate:checked ~ .sidebar label[for="tab-gate"],
+  #tab-deploy:checked ~ .sidebar label[for="tab-deploy"]{ background:var(--bg-info); color:var(--text-info); }
+</style>
+</head>
+<body>
+
+<h2 class="sr-only">rag-insight 콘솔 목업: RCA 리뷰 큐, Trace 뷰어, Quality Gate, 배포 승인, 대시보드 다섯 화면을 사이드바로 전환하는 프로토타입</h2>
+
+<div class="app">
+  <div class="layout">
+    <input type="radio" name="tab" id="tab-dash" checked>
+    <input type="radio" name="tab" id="tab-rca">
+    <input type="radio" name="tab" id="tab-trace">
+    <input type="radio" name="tab" id="tab-gate">
+    <input type="radio" name="tab" id="tab-deploy">
+
+    <div class="sidebar">
+      <div class="brand">
+        <i class="ti ti-activity-heartbeat" aria-hidden="true"></i>
+        <span>rag-insight</span>
+      </div>
+      <label class="navbtn" for="tab-dash" aria-label="대시보드"><i class="ti ti-layout-dashboard" aria-hidden="true"></i><span>대시보드</span></label>
+      <label class="navbtn" for="tab-rca" aria-label="RCA 리뷰 큐"><i class="ti ti-list-check" aria-hidden="true"></i><span>RCA 리뷰 큐</span><span class="cnt">7</span></label>
+      <label class="navbtn" for="tab-trace" aria-label="Trace 뷰어"><i class="ti ti-route" aria-hidden="true"></i><span>Trace 뷰어</span></label>
+      <label class="navbtn" for="tab-gate" aria-label="Quality Gate"><i class="ti ti-shield-check" aria-hidden="true"></i><span>Quality Gate</span></label>
+      <label class="navbtn" for="tab-deploy" aria-label="배포 승인"><i class="ti ti-rocket" aria-hidden="true"></i><span>배포 승인</span><span class="cnt">2</span></label>
+      <div class="userbox">
+        <div class="avatar">KH</div>
+        <div>
+          <div class="name">기현</div>
+          <div class="role">approver</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <!-- 대시보드 -->
+      <div id="screen-dash" class="screen">
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="h">운영 품질 대시보드</div>
+            <span class="sub">최근 7일 · 배치 최신화 4분 전</span>
+          </div>
+          <div class="metric-grid">
+            <div class="metric"><div class="lbl">NPS</div><div class="val">41 <span style="font-size:13px;color:var(--text-danger)">▼6</span></div></div>
+            <div class="metric"><div class="lbl">환각률</div><div class="val">3.2% <span style="font-size:13px;color:var(--text-danger)">▲1.1</span></div></div>
+            <div class="metric"><div class="lbl">recall@5</div><div class="val">0.78</div></div>
+            <div class="metric"><div class="lbl">RCA 대기</div><div class="val">7</div></div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="panel">
+            <div class="h-sm">Top RCA 원인 (7일)</div>
+
+            <div class="bar-row">
+              <div class="top">
+                <span>RETRIEVAL · LOW_RECALL <span class="pill" style="color:var(--text-info);background:var(--bg-info)">SDS</span></span>
+                <span class="val">38%</span>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:38%;background:var(--text-info)"></div></div>
+            </div>
+
+            <div class="bar-row">
+              <div class="top">
+                <span>GENERATION · HALLUCINATION <span class="pill" style="color:var(--text-info);background:var(--bg-info)">SDS</span></span>
+                <span class="val">24%</span>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:24%;background:var(--text-danger)"></div></div>
+            </div>
+
+            <div class="bar-row">
+              <div class="top">
+                <span>CONTENT · FAQ_MISSING <span class="pill" style="color:var(--text-warning);background:var(--bg-warning)">CONTENT</span></span>
+                <span class="val">19%</span>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:19%;background:var(--text-warning)"></div></div>
+            </div>
+
+            <div class="bar-row">
+              <div class="top">
+                <span>UNDERSTANDING · INTENT_ERROR <span class="pill" style="color:var(--text-info);background:var(--bg-info)">SDS</span></span>
+                <span class="val">12%</span>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:12%;background:var(--text-info)"></div></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="h-sm">활성 알람</div>
+            <div class="alarm-row">
+              <i class="ti ti-alert-triangle" style="color:var(--text-danger)" aria-hidden="true"></i>
+              <div>
+                <div class="title">환각률 급증 (제품군 A)</div>
+                <div class="sub">12:40 · RCA 100% 보존 전환</div>
+              </div>
+            </div>
+            <div class="alarm-row">
+              <i class="ti ti-alert-triangle" style="color:var(--text-warning)" aria-hidden="true"></i>
+              <div>
+                <div class="title">NPS 급락</div>
+                <div class="sub">금일 · 세션 1,204건</div>
+              </div>
+            </div>
+            <div class="alarm-row">
+              <i class="ti ti-clock" style="color:var(--text-warning)" aria-hidden="true"></i>
+              <div>
+                <div class="title">배포 승인 대기 2건</div>
+                <div class="sub">deployment_approvals</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RCA 리뷰 큐 -->
+      <div id="screen-rca" class="screen">
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="h">RCA 리뷰 큐</div>
+            <span class="sub">rca_status = pending · 사람 리뷰 7건</span>
+          </div>
+          <div class="sub" style="margin-bottom:6px">LLM 1차 라벨을 검토·정정합니다. 정정 시 이전 라벨은 is_current=false로 보존됩니다.</div>
+
+          <div class="row">
+            <span class="tag">t_9f2a</span>
+            <div style="flex:1">
+              <div style="font-size:13px">RETRIEVAL · <strong style="font-weight:500">LOW_RECALL</strong> <span class="pill" style="color:var(--text-info);background:var(--bg-info)">SDS</span></div>
+              <div class="sub">신뢰도 0.52 · 리뷰 사유: 저신뢰</div>
+            </div>
+            <button class="btn" onclick="sendPrompt('RCA trace t_9f2a의 LLM 라벨 근거(evidence)를 보여줘')">근거 ↗</button>
+            <button class="btn pri">확정</button>
+          </div>
+
+          <div class="row">
+            <span class="tag">t_7c10</span>
+            <div style="flex:1">
+              <div style="font-size:13px">CONTENT · <strong style="font-weight:500">FAQ_MISSING</strong> <span class="pill" style="color:var(--text-warning);background:var(--bg-warning)">CONTENT</span></div>
+              <div class="sub">신뢰도 0.81 · 리뷰 사유: 콘텐츠 귀속</div>
+            </div>
+            <button class="btn" onclick="sendPrompt('RCA trace t_7c10의 LLM 라벨 근거(evidence)를 보여줘')">근거 ↗</button>
+            <button class="btn pri">확정</button>
+          </div>
+
+          <div class="row">
+            <span class="tag">t_4d88</span>
+            <div style="flex:1">
+              <div style="font-size:13px">GENERATION · <strong style="font-weight:500">HALLUCINATION</strong> <span class="pill" style="color:var(--text-info);background:var(--bg-info)">SDS</span></div>
+              <div class="sub">신뢰도 0.74 · 리뷰 사유: 원인 충돌</div>
+            </div>
+            <button class="btn" onclick="sendPrompt('RCA trace t_4d88의 LLM 라벨 근거(evidence)를 보여줘')">근거 ↗</button>
+            <button class="btn pri">확정</button>
+          </div>
+
+          <div class="row">
+            <span class="tag">t_2b55</span>
+            <div style="flex:1">
+              <div style="font-size:13px">UNDERSTANDING · <strong style="font-weight:500">INTENT_ERROR</strong> <span class="pill" style="color:var(--text-info);background:var(--bg-info)">SDS</span></div>
+              <div class="sub">신뢰도 0.91 · 리뷰 사유: 자동확정 후보</div>
+            </div>
+            <button class="btn" onclick="sendPrompt('RCA trace t_2b55의 LLM 라벨 근거(evidence)를 보여줘')">근거 ↗</button>
+            <button class="btn pri">확정</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trace 뷰어 -->
+      <div id="screen-trace" class="screen">
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="h">Trace 뷰어</div>
+            <span class="tag">t_9f2a · turn 2/3</span>
+          </div>
+          <div class="sub" style="margin-bottom:12px">traces.payload(JSONB) 단건 조회 · service_version v2.3.1</div>
+
+          <div class="stage-row">
+            <div class="stage"><div class="dot" style="background:var(--text-success)"></div><div class="nm">의도분류</div><div class="ms">42ms</div></div>
+            <div class="stage"><div class="dot" style="background:var(--text-success)"></div><div class="nm">Rewrite</div><div class="ms">88ms</div></div>
+            <div class="stage"><div class="dot" style="background:var(--text-warning)"></div><div class="nm">Retrieval</div><div class="ms">310ms</div></div>
+            <div class="stage"><div class="dot" style="background:var(--text-success)"></div><div class="nm">Rerank</div><div class="ms">120ms</div></div>
+            <div class="stage"><div class="dot" style="background:var(--text-success)"></div><div class="nm">Context</div><div class="ms">35ms</div></div>
+            <div class="stage"><div class="dot" style="background:var(--text-warning)"></div><div class="nm">생성</div><div class="ms">640ms</div></div>
+          </div>
+
+          <div class="codebox">
+            <div style="font-size:12px;margin-bottom:6px"><strong style="font-weight:500">retrieval</strong> · top_k=5 · embedding_version e5-ft-0.4</div>
+            <div class="sub">정답 문서 <code>doc#A12</code> 검색됨(rank 7) → rerank 후 컨텍스트 진입 실패 · dropped_by_limit=2</div>
+            <div style="margin-top:8px">
+              <span class="pill" style="color:var(--text-warning);background:var(--bg-warning)">진단: LOW_RECALL 후보</span>
+              <span class="pill" style="color:var(--text-info);background:var(--bg-info)">owner: SDS</span>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;text-align:right">
+            <button class="btn" onclick="sendPrompt('이 trace를 골든셋 후보로 추가하는 절차를 알려줘')">골든셋 후보로 ↗</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quality Gate -->
+      <div id="screen-gate" class="screen">
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="h">Quality Gate</div>
+            <span class="pill" style="color:var(--text-success);background:var(--bg-success)">PASSED</span>
+          </div>
+          <div class="sub" style="margin-bottom:10px">exp_318 · control v2.3.1 vs candidate(rewrite 프롬프트 개선) · 골든셋 240문항 · 부트스트랩 95% CI</div>
+
+          <table class="gate">
+            <tr>
+              <th>메트릭</th><th class="mono">control</th><th class="mono">candidate</th><th class="mono">Δ</th><th class="mono">95% CI</th><th>판정</th>
+            </tr>
+            <tr>
+              <td class="mono">recall@5</td><td class="mono">0.71</td><td class="mono">0.78</td>
+              <td class="mono" style="color:var(--text-success)">+0.07</td>
+              <td class="mono" style="color:var(--text-tertiary)">[+0.03, +0.11]</td>
+              <td><span class="pill" style="color:var(--text-success);background:var(--bg-success)">유의·개선</span></td>
+            </tr>
+            <tr>
+              <td class="mono">ndcg@5</td><td class="mono">0.66</td><td class="mono">0.72</td>
+              <td class="mono" style="color:var(--text-success)">+0.06</td>
+              <td class="mono" style="color:var(--text-tertiary)">[+0.02, +0.10]</td>
+              <td><span class="pill" style="color:var(--text-success);background:var(--bg-success)">유의·개선</span></td>
+            </tr>
+            <tr>
+              <td class="mono">faithfulness</td><td class="mono">0.88</td><td class="mono">0.89</td>
+              <td class="mono" style="color:var(--text-secondary)">+0.01</td>
+              <td class="mono" style="color:var(--text-tertiary)">[-0.02, +0.04]</td>
+              <td><span class="pill" style="color:var(--text-secondary);background:var(--bg-secondary)">변화 없음</span></td>
+            </tr>
+            <tr>
+              <td class="mono">hallucination_rate</td><td class="mono">0.034</td><td class="mono">0.031</td>
+              <td class="mono" style="color:var(--text-secondary)">-0.003</td>
+              <td class="mono" style="color:var(--text-tertiary)">[-0.009, +0.002]</td>
+              <td><span class="pill" style="color:var(--text-secondary);background:var(--bg-secondary)">변화 없음</span></td>
+            </tr>
+          </table>
+
+          <div class="note-success">
+            <i class="ti ti-check" aria-hidden="true"></i>
+            회귀 메트릭 없음 + 목표 메트릭(recall@5) 유의 개선 → config_versions.status = proposed 전이
+          </div>
+        </div>
+      </div>
+
+      <!-- 배포 승인 -->
+      <div id="screen-deploy" class="screen">
+        <div class="panel">
+          <div class="h">배포 승인</div>
+          <div class="sub" style="margin-bottom:10px">deployment_approvals · PostgreSQL 상태 전이로 처리 (git enterprise는 소스 형상관리 전용)</div>
+
+          <div class="approval-card featured">
+            <div class="ahead">
+              <div class="atitle">cfg_318 · rewrite 프롬프트 v7 <span class="pill" style="color:var(--text-info);background:var(--bg-info)">proposed</span></div>
+              <span class="tag">config_type: prompt</span>
+            </div>
+            <div class="sub" style="margin-bottom:10px">based_on: v6(active) · Quality Gate exp_318 PASSED · recall@5 +0.07</div>
+            <div class="approval-actions">
+              <button class="btn" onclick="sendPrompt('cfg_318 candidate와 현재 active 버전의 diff를 보여줘')">버전 비교 ↗</button>
+              <button class="btn">반려</button>
+              <button class="btn pri">승인 → active</button>
+            </div>
+          </div>
+
+          <div class="approval-card plain">
+            <div class="ahead">
+              <div class="atitle">cfg_341 · hybrid 가중치 0.6 <span class="pill" style="color:var(--text-info);background:var(--bg-info)">proposed</span></div>
+              <span class="tag">config_type: search_config</span>
+            </div>
+            <div class="sub" style="margin-bottom:10px">based_on: v3(active) · Quality Gate exp_341 PASSED · ndcg@5 +0.04</div>
+            <div class="approval-actions">
+              <button class="btn" onclick="sendPrompt('cfg_341의 search_config 변경 내역을 보여줘')">버전 비교 ↗</button>
+              <button class="btn">반려</button>
+              <button class="btn pri">승인 → active</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function sendPrompt(text){
+    alert('[claude.ai 채팅으로 전송될 메시지]\n\n' + text + '\n\n(이 동작은 claude.ai 환경에서만 실제로 작동합니다)');
+  }
+</script>
+
+</body>
+</html>
